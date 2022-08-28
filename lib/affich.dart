@@ -1,5 +1,6 @@
+import 'dart:typed_data';
 import 'package:app1/Favorit.dart';
-import 'package:app1/home.dart';
+import 'package:dio/dio.dart';
 import 'package:app1/main.dart';
 import 'package:app1/splash.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -12,14 +13,17 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-var rr;
+// ignore: non_constant_identifier_names
 void _addtofa(String St) async {
   final prefs = await SharedPreferences.getInstance();
-  prefs.setString('alla', St + "," + s.toString());
+  prefs.setString('alla', "$St,$s");
   s = prefs.getString('alla');
 }
 
+// ignore: non_constant_identifier_names
 void _addtofa2(String St) async {
   final prefs = await SharedPreferences.getInstance();
   prefs.setString('alla', St);
@@ -39,24 +43,20 @@ class PhotoA extends StatefulWidget {
 }
 
 class _PhotoAState extends State<PhotoA> {
-  //get url => null;
-
   @override
   void setState(VoidCallback fn) {
-    // TODO: implement setState
+    _requestPermission();
     super.setState(fn);
   }
 
-  String _wallpaperAsset = 'Unknown';
-  String _platformVersion = 'Unknown';
+  @override
   Widget build(BuildContext context) {
     widget.url;
     loadBuyedItems();
-    var replace;
+    StringBuffer replace;
     List fav = [];
-    int j = 0;
     if (s != null) {
-      fav = s != null ? s.split(",") : null;
+      fav = s.split(",");
       if (s.contains(widget.url)) {
         c = Icons.favorite;
         f = true;
@@ -74,16 +74,12 @@ class _PhotoAState extends State<PhotoA> {
             top: 0,
             left: 0,
             right: 0,
-            child: Container(
+            child: SizedBox(
               height: MediaQuery.of(context).size.height,
               width: MediaQuery.of(context).size.width,
-              // child: Image(
-              //   image: AssetImage(widget.items[widget.index]),
-              //   fit: BoxFit.fill,
-              // ),
               child: CachedNetworkImage(
                 imageUrl: widget.url,
-                errorWidget: (context, url, error) => CircularProgressIndicator(
+                errorWidget: (context, url, error) => const CircularProgressIndicator(
                   color: Color.fromARGB(255, 163, 152, 152),
                 ),
                 fit: BoxFit.fill,
@@ -91,44 +87,46 @@ class _PhotoAState extends State<PhotoA> {
             ),
           ),
           Positioned(
-            top: 4,
+            top: 25,
             left: 4,
             child: IconButton(
               disabledColor: Colors.black,
+              // ignore: prefer_const_constructors
               icon: Icon(
                 Icons.arrow_circle_left_outlined,
                 size: 40,
-                color: Color.fromARGB(255, 255, 255, 255),
+                color: const Color.fromARGB(255, 255, 255, 255),
               ),
               onPressed: () {
                 Navigator.pop(
                   context,
-                  MaterialPageRoute(builder: (context) => Faviru()),
+                  MaterialPageRoute(builder: (context) => const Faviru()),
                 );
               },
             ),
           ),
           Positioned(
               bottom: 40,
-              right: MediaQuery.of(context).size.width * .3,
+              right: MediaQuery.of(context).size.width * .2,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.download_for_offline_outlined,
                       color: Colors.white,
                       size: 40,
                     ),
                     onPressed: () {
                       ////download///
+                      _getHttp();
                     },
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 40,
                   ),
                   IconButton(
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.format_paint_outlined,
                       color: Colors.white,
                       size: 40,
@@ -139,47 +137,47 @@ class _PhotoAState extends State<PhotoA> {
                         context: context,
                         builder: (BuildContext context) {
                           return CupertinoAlertDialog(
-                            title: Text('Set As:\n'),
+                            title: const Text('Set As:\n'),
                             // content: Text("Your chois"),
                             actions: [
-                              SizedBox(
+                              const SizedBox(
                                 width: 20,
                               ),
                               MaterialButton(
-                                child: Text('Both screens'),
+                                child: const Text('Both screens'),
                                 onPressed: () async {
                                   Navigator.pop(context);
                                   _setwallpaper(
                                       WallpaperManagerFlutter.BOTH_SCREENS);
                                 },
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 width: 20,
                               ),
                               MaterialButton(
-                                child: Text('Home screen'),
+                                child: const Text('Home screen'),
                                 onPressed: () async {
-                                  //     Navigator.pop(context);
+                                   Navigator.pop(context);
                                   _setwallpaper(
                                       WallpaperManagerFlutter.HOME_SCREEN);
                                 },
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 width: 20,
                               ),
                               MaterialButton(
-                                child: Text('Lock screen'),
+                                child: const Text('Lock screen'),
                                 onPressed: () async {
                                   _setwallpaper(
                                       WallpaperManagerFlutter.LOCK_SCREEN);
                                   Navigator.pop(context);
                                 },
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 width: 20,
                               ),
                               MaterialButton(
-                                child: Text('Cancel'),
+                                child: const Text('Cancel'),
                                 onPressed: () {
                                   Navigator.pop(context);
                                 },
@@ -190,7 +188,7 @@ class _PhotoAState extends State<PhotoA> {
                       );
                     },
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 40,
                   ),
                   IconButton(
@@ -206,11 +204,22 @@ class _PhotoAState extends State<PhotoA> {
                           if (f == false) {
                             _addtofa(widget.url);
                             c = Icons.favorite;
+                             ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Add to favorite'),
+                              ),
+                            );
                           } else {
                             fav.remove(widget.url);
                             replace = StringBuffer();
                             replace.writeAll(fav, ',');
                             _addtofa2(replace.toString());
+                             ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                dismissDirection : DismissDirection.up,
+                                content: Text('Remove from favorite'),
+                              ),
+                            );
                           }
                         },
                       );
@@ -221,30 +230,61 @@ class _PhotoAState extends State<PhotoA> {
         ],
       ),
     );
-
-    // else {
-    //   return Scaffold(
-    //     appBar: AppBar(backgroundColor: dark),
-    //   );
   }
 
   Future<void> _setwallpaper(location) async {
-    //  var file = widget.items[widget.index];
     var file = await DefaultCacheManager().getSingleFile(widget.url);
     try {
       WallpaperManagerFlutter().setwallpaperfromFile(file, location);
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Wallpaper updated'),
         ),
       );
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Error Setting Wallpaper'),
         ),
       );
+      // ignore: avoid_print
       print(e);
     }
+  }
+
+  _requestPermission() async {
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.storage,
+    ].request();
+
+    final info = statuses[Permission.storage].toString();
+    // ignore: avoid_print
+    print(info);
+    // _toastInfo(info);
+  }
+
+  _getHttp() async {
+
+     ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Loading'),
+        ),
+      );
+    var response = await Dio()
+        .get(widget.url, options: Options(responseType: ResponseType.bytes));
+    // ignore: unused_local_variable
+    final result = await ImageGallerySaver.saveImage(
+        Uint8List.fromList(response.data),
+        quality: 80,
+        name: "hello");
+       // ignore: use_build_context_synchronously
+       ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Download is done'),
+        ),
+      );
+    //_toastInfo("$result");
   }
 }

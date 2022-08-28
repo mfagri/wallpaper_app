@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:app1/affich.dart';
 import 'package:app1/data.dart';
-import 'package:app1/home.dart';
 import 'package:app1/main.dart';
 import 'package:app1/splash.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -21,17 +20,12 @@ import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 
-// void _addtofa2(String St) async {
-//   final prefs = await SharedPreferences.getInstance();
-//   prefs.setString('all', St);
-//   s = prefs.getString('all');
-// }
-List fav = [];
 
 class Faviru extends StatefulWidget {
   const Faviru({Key? key}) : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _FaviruState createState() => _FaviruState();
 }
 
@@ -39,14 +33,10 @@ class _FaviruState extends State<Faviru> {
   @override
   Widget build(BuildContext context) {
     loadBuyedItems();
-    int j = 0;
-    var size = MediaQuery.of(context).size;
     setState(() {
-    if (s != null) fav = s.split(",");
-      
-    });
-    // print(fav);
-    // print("s");
+    if (s != null) fav = s.split(",");  
+    }
+    );
     return Scaffold(
       appBar: AppBar(
         backgroundColor: dark,
@@ -57,7 +47,8 @@ class _FaviruState extends State<Faviru> {
         centerTitle: true,
       ),
       backgroundColor: dark,
-      body: (s == '')
+      body: (s == '' || s == null)
+          // ignore: avoid_unnecessary_containers
           ? Container(
               child: Center(
                 child: Text(
@@ -71,61 +62,9 @@ class _FaviruState extends State<Faviru> {
   }
 }
 
-class Favor extends StatefulWidget {
-  const Favor({Key? key}) : super(key: key);
-
-  @override
-  State<Favor> createState() => _FavorState();
-}
-
-// var replace;
-
-class _FavorState extends State<Favor> {
-  @override
-  void setState(VoidCallback fn) {
-    // TODO: implement setState
-    super.setState(fn);
-  }
-
-  Widget build(BuildContext context) {
-    setState() {
-
-    loadBuyedItems();
-    }
-    int j = 0;
-    if (s != null) fav = s.split(",");
-    var size = MediaQuery.of(context).size;
-    print(fav);
-    print("s");
-    if (s != null) {
-      return Container(
-        child: masonryLayout(context),
-      );
-    }
-    if (s == null) print('lol');
-    return Scaffold(
-        appBar: AppBar(
-          backgroundColor: dark,
-          title: Text(
-            "Favorites",
-            style: TextStyle(color: dark2),
-          ),
-          centerTitle: true,
-        ),
-        backgroundColor: dark,
-        body: Container(
-          child: Center(
-              child: Text(
-            'No Favorites',
-            style: TextStyle(color: dark2),
-          )),
-        ));
-  }
-}
-
 Widget masonryLayout(BuildContext context) {
   return Container(
-    padding: EdgeInsets.only(left: 5, right: 5),
+    padding: const EdgeInsets.only(left: 5, right: 5),
     color: dark,
     height: MediaQuery.of(context).size.height,
     width: MediaQuery.of(context).size.width,
@@ -133,7 +72,7 @@ Widget masonryLayout(BuildContext context) {
       child: MasonryGridView.builder(
         mainAxisSpacing: 10,
         crossAxisSpacing: 10,
-        gridDelegate: SliverSimpleGridDelegateWithFixedCrossAxisCount(
+        gridDelegate: const SliverSimpleGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
         ),
         itemCount: fav.length - 1,
@@ -143,7 +82,7 @@ Widget masonryLayout(BuildContext context) {
               child: InkWell(
                 child: Stack(
                   children: [
-                    Positioned(
+                    const Positioned(
                       child: cards(),
                     ),
                     Positioned(
@@ -153,8 +92,8 @@ Widget masonryLayout(BuildContext context) {
                       bottom: 0,
                       child: CachedNetworkImage(
                     imageUrl: fav[index],
-                    placeholder: (context, url) => CircularProgressIndicator(),
-                    errorWidget: (context, url, error) => Icon(Icons.error),
+                    placeholder: (context, url) => const CircularProgressIndicator(),
+                    errorWidget: (context, url, error) => const Icon(Icons.error),
                     fit: BoxFit.fill,
                   ),
                     ),
@@ -165,8 +104,9 @@ Widget masonryLayout(BuildContext context) {
                         children: [
                           Row(
                               mainAxisAlignment: MainAxisAlignment.start,
+                              // ignore: prefer_const_literals_to_create_immutables
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.favorite,
                                   color: Colors.red,
                                   size: 20,
@@ -176,7 +116,6 @@ Widget masonryLayout(BuildContext context) {
                       ),
                     ),
                   ],
-                  ///////////////////////////one tap
                 ),
                 onTap: () {
                   Navigator.push(
@@ -187,7 +126,6 @@ Widget masonryLayout(BuildContext context) {
                             )),
                   );
                 },
-                ////////////////////////////////
               ));
         },
       ),
@@ -195,6 +133,7 @@ Widget masonryLayout(BuildContext context) {
   );
 }
 
+// ignore: camel_case_types
 class cards extends StatelessWidget {
   const cards({Key? key}) : super(key: key);
   @override
